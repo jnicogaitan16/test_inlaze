@@ -53,7 +53,6 @@ class TestRegister:
         register_page = RegisterPage(driver)
         register_page.navigate()
         
-        # Primer registro con datos válidos
         test_data = get_registro_test_data()['valid_user']
         success, mensaje = register_page.register(
             test_data['name'],
@@ -63,12 +62,11 @@ class TestRegister:
         )
         assert success, f"No se pudo completar el registro con datos válidos\nError: {mensaje}\nPor favor, verifica los datos e intenta nuevamente."
         
-        # Intentar registrar el mismo correo con diferentes datos
         register_page.navigate()
         otro_usuario = TestDataGenerator.generar_usuario_prueba()
         success, error_msg = register_page.register(
             otro_usuario['name'],
-            test_data['email'],  # Usar el mismo email del primer registro
+            test_data['email'],
             otro_usuario['password'],
             otro_usuario['password']
         )
@@ -82,17 +80,15 @@ class TestRegister:
         register_page = RegisterPage(driver)
         register_page.navigate()
         
-        # Usar datos de prueba válidos para el usuario
         test_data = get_registro_test_data()['valid_user']
         
-        # Probar diferentes casos de contraseñas
         test_cases = [
             (TestDataGenerator.generar_password_invalido('longitud'), "La contraseña debe tener al menos 8 caracteres"),
             (TestDataGenerator.generar_password_invalido('mayuscula'), "La contraseña debe contener al menos una mayúscula"),
             (TestDataGenerator.generar_password_invalido('minuscula'), "La contraseña debe contener al menos una minúscula"),
             (TestDataGenerator.generar_password_invalido('numero'), "La contraseña debe contener al menos un número"),
             (TestDataGenerator.generar_password_invalido('especial'), "La contraseña debe contener al menos un carácter especial"),
-            (test_data['password'], None)  # Caso válido
+            (test_data['password'], None)
         ]
         
         for password, expected_error in test_cases:

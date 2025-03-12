@@ -5,7 +5,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from .base_page import BasePage
 
 class RegisterPage(BasePage):
-    # Selectores del formulario
     REGISTER_FORM = (By.CSS_SELECTOR, "app-sign-up-form form")
     NAME_INPUT = (By.CSS_SELECTOR, "app-sign-up-form input[formcontrolname='name']")
     EMAIL_INPUT = (By.CSS_SELECTOR, "app-sign-up-form input[formcontrolname='email']")
@@ -13,15 +12,11 @@ class RegisterPage(BasePage):
     CONFIRM_PASSWORD_INPUT = (By.CSS_SELECTOR, "app-sign-up-form app-password:nth-child(2) input[type='password']")
     REGISTER_BUTTON = (By.CSS_SELECTOR, "app-sign-up-form button[type='submit']")
     LOGIN_LINK = (By.CSS_SELECTOR, "a[href*='/sign-in'], a[href*='/login']")
-    
-    # Selectores de mensajes de error
     ERROR_MESSAGE = (By.CSS_SELECTOR, ".error-message, .alert-error, mat-error")
     NAME_ERROR = (By.CSS_SELECTOR, ".error-message:contains('nombre'), mat-error:contains('nombre')")
     EMAIL_ERROR = (By.CSS_SELECTOR, ".error-message:contains('correo'), mat-error:contains('correo')")
     PASSWORD_ERROR = (By.CSS_SELECTOR, ".error-message:contains('contraseña'), mat-error:contains('contraseña')")
     PASSWORD_REQUIREMENTS = (By.CSS_SELECTOR, ".password-requirements")
-    
-    # Botones de mostrar/ocultar contraseña
     SHOW_PASSWORD_BUTTON = (By.CSS_SELECTOR, "app-sign-up-form app-password:first-of-type button")
     SHOW_CONFIRM_PASSWORD_BUTTON = (By.CSS_SELECTOR, "app-sign-up-form app-password:last-of-type button")
 

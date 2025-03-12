@@ -1,6 +1,29 @@
-Pruebas Automatizadas - Inlaze QA Test
+# Pruebas Automatizadas - Inlaze QA Test
 
 Framework de pruebas automatizadas para el sistema de autenticación de Inlaze utilizando Selenium con Python.
+
+## Alcance del Proyecto
+
+### Funcionalidades Cubiertas
+- **Registro de Usuario**: 
+  * Validación de nombre completo (2 palabras)
+  * Validación de correo electrónico único
+  * Validación de contraseña segura
+  * Validación de campos obligatorios
+
+- **Inicio de Sesión**: 
+  * Validación de credenciales
+  * Validación de campos obligatorios
+  * Visualización del nombre de usuario
+  * Cierre de sesión
+
+### Cobertura de Pruebas
+- Total de casos de prueba: 25
+  * Registro de usuario: 13 casos
+  * Inicio de sesión: 12 casos
+- Validaciones de seguridad
+- Validaciones de formato
+- Validaciones de campos obligatorios
 
 Estructura del Proyecto
 
@@ -68,26 +91,33 @@ pip install -r requirements.txt
 
 ## Ejecutar Pruebas
 
-### Comandos Básicos
+### Comandos Detallados
 
-1. Ejecutar todas las pruebas:
+1. Ejecutar todas las pruebas con reporte completo:
 ```bash
-# Desde el directorio raíz del proyecto
-python3 -m pytest tests/
+# Reporte detallado con capturas y variables
+pytest tests/ -v --html=reports/reporte_completo.html --capture=tee-sys --showlocals
 ```
 
-2. Ejecutar con reporte HTML detallado:
+2. Ejecutar pruebas específicas con reporte:
 ```bash
-python -m pytest tests/ --html=reports/report.html --self-contained-html
+# Solo pruebas de inicio de sesión
+pytest tests/test_login.py -v --html=reports/reporte_login.html --capture=tee-sys --showlocals
+
+# Solo pruebas de registro
+pytest tests/test_register.py -v --html=reports/reporte_registro.html --capture=tee-sys --showlocals
 ```
 
-3. Ejecutar pruebas específicas:
+3. Ejecutar pruebas por funcionalidad:
 ```bash
-# Ejecutar solo pruebas de login
-python -m pytest tests/test_login.py
+# Pruebas de validación de contraseña
+pytest -v -k "password" tests/
 
-# Ejecutar solo pruebas de registro
-python -m pytest tests/test_registration.py
+# Pruebas de validación de email
+pytest -v -k "email" tests/
+
+# Pruebas de campos obligatorios
+pytest -v -k "required" tests/
 ```
 
 ### Opciones Adicionales
@@ -112,18 +142,46 @@ python -m pytest -k "test_login" tests/
 python -m pytest --capture=tee-sys tests/
 ```
 
-### Ubicación de Reportes
+### Estructura de Reportes y Documentación
 
-Después de la ejecución, encontrarás:
-- Reporte HTML: `reports/report.html`
-- Capturas de pantalla de errores: `reports/screenshots/`
+```
+reports/
+├── reporte_completo.html     # Reporte de todas las pruebas
+├── reporte_login.html        # Reporte de inicio de sesión
+├── reporte_registro.html     # Reporte de registro
+└── screenshots/              # Capturas de pantalla de errores
+    ├── error_login_*.png     # Errores de inicio de sesión
+    └── error_registro_*.png  # Errores de registro
 
-### Solución de Problemas
+docs/
+├── test_cases.md            # Descripción detallada de casos de prueba
+└── bug_report.md            # Registro y seguimiento de bugs
+```
 
-Si encuentras errores de importación, asegúrate de:
-1. Tener el entorno virtual activado
-2. Estar en el directorio raíz del proyecto
-3. Tener todas las dependencias instaladas correctamente
+Cada reporte HTML incluye:
+- Resultados detallados de pruebas
+- Trazas de error completas
+- Variables locales en caso de fallo
+- Enlaces a capturas de pantalla
+
+### Guía de Solución de Problemas
+
+1. **Errores Comunes**:
+   - **No se encuentra el elemento**: La página no cargó completamente
+   - **Tiempo de espera excedido**: La aplicación no responde
+   - **Error del navegador**: Problemas con ChromeDriver
+
+2. **Pasos para Solucionar**:
+   - Revisar las capturas en `reports/screenshots/`
+   - Verificar los logs en el reporte HTML
+   - Consultar `docs/bug_report.md`
+
+3. **Recomendaciones**:
+   - Ejecutar en un ambiente limpio
+   - Mantener ChromeDriver actualizado
+   - Revisar reportes después de cada ejecución
+   - Asegurar que el entorno virtual está activado
+   - Verificar todas las dependencias instaladas
 
 ## Documentación
 

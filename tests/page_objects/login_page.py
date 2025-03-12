@@ -26,13 +26,11 @@ class LoginPage(BasePage):
         self.navigate_to(f"{self.AUTH_PATH}/sign-in")
         
         try:
-            # Esperar que el componente Angular cargue
             self._wait_for_condition(
                 EC.presence_of_element_located(self.LOGIN_FORM),
                 message="No se pudo cargar el componente de inicio de sesión"
             )
             
-            # Esperar que los campos estén presentes y sean interactuables
             self._wait_for_condition(
                 EC.presence_of_element_located(self.EMAIL_INPUT),
                 message="No se encontró el campo de correo electrónico"
@@ -42,7 +40,6 @@ class LoginPage(BasePage):
                 message="No se encontró el campo de contraseña"
             )
             
-            # Verificar que los campos sean interactuables
             email_input = self.find_element(*self.EMAIL_INPUT)
             password_input = self.find_element(*self.PASSWORD_INPUT)
             
@@ -66,7 +63,6 @@ class LoginPage(BasePage):
                 - str: Mensaje de éxito o error
         """
         try:
-            # Validar campos vacíos
             if not email and not password:
                 return False, "Todos los campos son obligatorios"
             elif not email:
@@ -74,22 +70,18 @@ class LoginPage(BasePage):
             elif not password:
                 return False, "La contraseña es obligatoria"
 
-            # Validar formato del correo
             email_error = self.validate_email_format(email)
             if email_error:
                 return False, email_error
 
-            # Validar formato de la contraseña
             password_error = self.validate_password_format(password)
             if password_error:
                 return False, password_error
 
-            # Ingresar credenciales
             self.type_text(*self.EMAIL_INPUT, email)
             self.type_text(*self.PASSWORD_INPUT, password)
             self.click_element(*self.LOGIN_BUTTON)
             
-            # Verificar mensajes de error de validación
             error_msg = self.get_error_message()
             if error_msg:
                 return False, error_msg
