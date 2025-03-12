@@ -1,9 +1,7 @@
 import pytest
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from tests.page_objects.register_page import RegisterPage
-from tests.utils.test_data import TestDataGenerator
+from tests.utils.test_data import TestDataGenerator, get_registro_test_data
 
 class TestRegister:
     """Pruebas de funcionalidad de registro de usuarios"""
@@ -13,11 +11,12 @@ class TestRegister:
         register_page = RegisterPage(driver)
         register_page.navigate()
         
+        test_data = get_registro_test_data()['mismatched_passwords']
         success, message = register_page.register(
-            "Nicolas Gaitan",  # Nombre con mayúsculas iniciales
-            "jnicogaitan@gmail.com",
-            "Password1*",
-            "DifferentPass1*"
+            test_data['name'],
+            test_data['email'],
+            test_data['password'],
+            test_data['confirm_password']
         )
         
         assert not success, "El registro fue exitoso con contraseñas que no coinciden"
@@ -30,13 +29,13 @@ class TestRegister:
 
     @pytest.mark.parametrize("name,email,password,confirm_password,expected_error", [
         ("", "", "", "", "Todos los campos son obligatorios"),
-        ("John", "", "", "", "El nombre debe contener nombre y apellido"),
-        ("John Doe", "", "", "", "El correo electrónico es obligatorio"),
-        ("John Doe", "invalid", "", "", "El formato del correo electrónico no es válido"),
-        ("John Doe", "test@example.com", "short", "short", "La contraseña debe tener al menos 8 caracteres"),
-        ("John Doe", "test@example.com", "password123", "password123", "La contraseña debe contener al menos una mayúscula"),
-        ("John Doe", "test@example.com", "Password123", "Password123", "La contraseña debe contener al menos un carácter especial (!@#$%^&*(),.?\":{|}|<>)"),
-        ("John Doe", "test@example.com", "Password123!", "Password124!", "Las contraseñas no coinciden")
+        (TestDataGenerator.generar_nombre(1), "", "", "", "El nombre debe contener nombre y apellido"),
+        (TestDataGenerator.generar_nombre(), "", "", "", "El correo electrónico es obligatorio"),
+        (TestDataGenerator.generar_nombre(), "correo.invalido", "", "", "El formato del correo electrónico no es válido"),
+        (TestDataGenerator.generar_nombre(), TestDataGenerator.generar_email(), TestDataGenerator.generar_password_invalido('longitud'), TestDataGenerator.generar_password_invalido('longitud'), "La contraseña debe tener al menos 8 caracteres"),
+        (TestDataGenerator.generar_nombre(), TestDataGenerator.generar_email(), TestDataGenerator.generar_password_invalido('mayuscula'), TestDataGenerator.generar_password_invalido('mayuscula'), "La contraseña debe contener al menos una mayúscula"),
+        (TestDataGenerator.generar_nombre(), TestDataGenerator.generar_email(), TestDataGenerator.generar_password_invalido('especial'), TestDataGenerator.generar_password_invalido('especial'), "La contraseña debe contener al menos un carácter especial"),
+        (TestDataGenerator.generar_nombre(), TestDataGenerator.generar_email(), TestDataGenerator.generar_password_valido(), "Password124!", "Las contraseñas no coinciden")
     ])
     def test_registration_validation(self, driver, name, email, password, confirm_password, expected_error):
         """Verificar las validaciones del formulario de registro con diferentes casos"""
@@ -55,22 +54,23 @@ class TestRegister:
         register_page.navigate()
         
         # Primer registro con datos válidos
-        user_data = TestDataGenerator.generar_usuario_prueba()
+        test_data = get_registro_test_data()['valid_user']
         success, mensaje = register_page.register(
-            user_data['name'],
-            user_data['email'],
-            user_data['password'],
-            user_data['password']
+            test_data['name'],
+            test_data['email'],
+            test_data['password'],
+            test_data['confirm_password']
         )
         assert success, f"No se pudo completar el registro con datos válidos\nError: {mensaje}\nPor favor, verifica los datos e intenta nuevamente."
         
         # Intentar registrar el mismo correo con diferentes datos
         register_page.navigate()
+        otro_usuario = TestDataGenerator.generar_usuario_prueba()
         success, error_msg = register_page.register(
-            "Otro Usuario",
-            user_data['email'],
-            "OtroPass123!",
-            "OtroPass123!"
+            otro_usuario['name'],
+            test_data['email'],  # Usar el mismo email del primer registro
+            otro_usuario['password'],
+            otro_usuario['password']
         )
         
         assert not success, "El registro permitió un correo electrónico que ya está en uso"
@@ -82,20 +82,23 @@ class TestRegister:
         register_page = RegisterPage(driver)
         register_page.navigate()
         
-        user_data = TestDataGenerator.generar_usuario_prueba()
+        # Usar datos de prueba válidos para el usuario
+        test_data = get_registro_test_data()['valid_user']
+        
+        # Probar diferentes casos de contraseñas
         test_cases = [
-            ("short", "La contraseña debe tener al menos 8 caracteres"),
-            ("password123", "La contraseña debe contener al menos una mayúscula"),
-            ("PASSWORD123", "La contraseña debe contener al menos una minúscula"),
-            ("Password", "La contraseña debe contener al menos un número"),
-            ("Password123", "La contraseña debe contener al menos un carácter especial (!@#$%^&*(),.?\":{|}|<>)"),
-            ("Password123!", None)  # Caso válido
+            (TestDataGenerator.generar_password_invalido('longitud'), "La contraseña debe tener al menos 8 caracteres"),
+            (TestDataGenerator.generar_password_invalido('mayuscula'), "La contraseña debe contener al menos una mayúscula"),
+            (TestDataGenerator.generar_password_invalido('minuscula'), "La contraseña debe contener al menos una minúscula"),
+            (TestDataGenerator.generar_password_invalido('numero'), "La contraseña debe contener al menos un número"),
+            (TestDataGenerator.generar_password_invalido('especial'), "La contraseña debe contener al menos un carácter especial"),
+            (test_data['password'], None)  # Caso válido
         ]
         
         for password, expected_error in test_cases:
             success, error_msg = register_page.register(
-                user_data['name'],
-                user_data['email'],
+                test_data['name'],
+                test_data['email'],
                 password,
                 password
             )

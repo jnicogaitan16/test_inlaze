@@ -1,10 +1,9 @@
 import pytest
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from tests.page_objects.login_page import LoginPage
 from tests.page_objects.register_page import RegisterPage
-from tests.utils.test_data import TestDataGenerator
+from tests.utils.test_data import TestDataGenerator, get_login_test_data
 
 class TestLogin:
     """Pruebas de funcionalidad de inicio de sesión"""
@@ -14,35 +13,18 @@ class TestLogin:
         login_page = LoginPage(driver)
         login_page.navigate()
         
-        success, error = login_page.login("test@example.com", "")
-        assert not success
-        assert "La contraseña es obligatoria" in error
+        test_data = get_login_test_data()
+        valid_user = test_data['valid_user']
         
-        success, error = login_page.login("test@example.com", "Abc1*")
-        assert not success
-        assert "La contraseña debe tener al menos 8 caracteres" in error
+        # Probar cada validación de contraseña
+        for validation in test_data['password_validations']:
+            success, error = login_page.login(valid_user['email'], validation['password'])
+            assert not success, f"El login fue exitoso con contraseña inválida: {validation['password']}"
+            assert validation['expected_error'] in error, \
+                f"Error esperado: {validation['expected_error']}, Error obtenido: {error}"
         
-        success, error = login_page.login("test@example.com", "password123!")
-        assert not success
-        assert "La contraseña debe contener al menos una mayúscula" in error
-        
-        success, error = login_page.login("test@example.com", "PASSWORD123!")
-        assert not success
-        assert "La contraseña debe contener al menos una minúscula" in error
-        
-        success, error = login_page.login("test@example.com", "Password!")
-        assert not success
-        assert "La contraseña debe contener al menos un número" in error
-        
-        success, error = login_page.login("test@example.com", "Password123")
-        assert not success
-        assert "La contraseña debe contener al menos un carácter especial" in error
-        
-        success, error = login_page.login("test@example.com", "Password 1*")
-        assert not success
-        assert "La contraseña no puede contener espacios" in error
-        
-        password = "Password1*"
+        # Verificar que el campo mantiene el valor ingresado
+        password = valid_user['password']
         login_page.type_text(*login_page.PASSWORD_INPUT, password)
         input_value = login_page.get_element_attribute(*login_page.PASSWORD_INPUT, "value")
         assert input_value == password, \
@@ -75,7 +57,8 @@ class TestLogin:
         login_page = LoginPage(driver)
         login_page.navigate()
         
-        success, error_msg = login_page.login("usuario.invalido@test.com", "Test1234!")
+        test_data = get_login_test_data()['invalid_credentials']
+        success, error_msg = login_page.login(test_data['email'], test_data['password'])
         
         assert not success, "El inicio de sesión no debería ser exitoso con credenciales inválidas"
         assert error_msg and "Las credenciales ingresadas no son válidas" in error_msg, \
@@ -83,6 +66,7 @@ class TestLogin:
 
     def test_logout_functionality(self, driver):
         """Verificar la funcionalidad de cierre de sesión"""
+        # Registrar un nuevo usuario
         register_page = RegisterPage(driver)
         register_page.navigate()
         datos_usuario = TestDataGenerator.generar_usuario_prueba()
@@ -94,21 +78,25 @@ class TestLogin:
         )
         assert success, "No se pudo registrar el usuario de prueba. Por favor, verifica los datos e intenta nuevamente."
         
+        # Iniciar sesión con el usuario registrado
         login_page = LoginPage(driver)
         login_page.navigate()
         success, _ = login_page.login(datos_usuario['email'], datos_usuario['password'])
         assert success, "No se pudo iniciar sesión con las credenciales proporcionadas. Por favor, verifica e intenta nuevamente."
         
+        # Verificar que el nombre mostrado es correcto
         nombre_mostrado = login_page.get_user_name()
         assert nombre_mostrado == datos_usuario['name'], \
             f"El nombre mostrado no coincide. Esperado: {datos_usuario['name']}, Obtenido: {nombre_mostrado}"
         
+        # Cerrar sesión y verificar redirección
         login_page.logout()
         assert login_page._wait_for_condition(
             EC.url_contains("/sign-in"),
             message="No se pudo redireccionar a la página de inicio de sesión"
         )
         
+        # Verificar que la sesión se cerró correctamente
         try:
             assert not login_page.get_user_name(), "La sesión no se cerró correctamente. El nombre de usuario sigue siendo visible."
         except TimeoutException:

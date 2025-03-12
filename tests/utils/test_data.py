@@ -182,3 +182,55 @@ def generate_test_user():
             - password: Contraseña que cumple requisitos de seguridad
     """
     return TestDataGenerator.generar_usuario_prueba()
+
+def get_registro_test_data():
+    """Obtener datos de prueba específicos para casos de registro
+    
+    Returns:
+        dict: Conjunto de datos de prueba para diferentes escenarios de registro:
+            - valid_user: Usuario con datos válidos
+            - mismatched_passwords: Usuario con contraseñas que no coinciden
+    """
+    return {
+        'valid_user': {
+            'name': 'Nicolas Gaitan',
+            'email': 'jnicogaitan@gmail.com',
+            'password': 'Password1*',
+            'confirm_password': 'Password1*'
+        },
+        'mismatched_passwords': {
+            'name': 'Nicolas Gaitan',
+            'email': 'jnicogaitan@gmail.com',
+            'password': 'Password1*',
+            'confirm_password': 'DifferentPass1*'
+        }
+    }
+
+def get_login_test_data():
+    """Obtener datos de prueba específicos para casos de inicio de sesión
+    
+    Returns:
+        dict: Conjunto de datos de prueba para diferentes escenarios de login:
+            - valid_user: Usuario con credenciales válidas
+            - invalid_credentials: Usuario con credenciales incorrectas
+            - password_validations: Casos de prueba para validaciones de contraseña
+    """
+    return {
+        'valid_user': {
+            'email': 'jnicogaitan@gmail.com',
+            'password': 'Password1*'
+        },
+        'invalid_credentials': {
+            'email': 'usuario.invalido@test.com',
+            'password': 'Test1234!'
+        },
+        'password_validations': [
+            {'password': '', 'expected_error': 'La contraseña es obligatoria'},
+            {'password': 'Abc1*', 'expected_error': 'La contraseña debe tener al menos 8 caracteres'},
+            {'password': 'password123!', 'expected_error': 'La contraseña debe contener al menos una mayúscula'},
+            {'password': 'PASSWORD123!', 'expected_error': 'La contraseña debe contener al menos una minúscula'},
+            {'password': 'Password!', 'expected_error': 'La contraseña debe contener al menos un número'},
+            {'password': 'Password123', 'expected_error': 'La contraseña debe contener al menos un carácter especial'},
+            {'password': 'Password 1*', 'expected_error': 'La contraseña no puede contener espacios'}
+        ]
+    }
